@@ -10,7 +10,11 @@ import {
   availableConvertUnit
 } from "../converter/conversationData";
 import DisplayComponent from "../displayComponent";
-import { useStyles } from "./style";
+import { useStyles, usedStyles } from "./style";
+import { Money } from "./moneyConstructor";
+
+const valueFirst = new Money(null, "Euro");
+const valueSecond = new Money(null, "Euro");
 
 export default function Arithemetic() {
   const classes = useStyles();
@@ -26,74 +30,131 @@ export default function Arithemetic() {
   const [unit2, setUnit2] = React.useState("Euro");
   const [answer, setAnswer] = React.useState(null);
 
+  // below function controls the cange of base units
   const handleBaseUnitChange = (value) => {
     setAnswer(null);
     setBaseUnit(value);
   };
+
+  // below function controls the arithemetic operational changes
   const handleChangeOperation = (value) => {
     setAnswer(null);
     setSelectedOperation(value);
   };
+
+  // below functions handles the changes for value one textfeild
   const handleConvertValueOneChange = (e) => {
     setTextFeildError1(false);
-    setvalueOne(null);
     setHelperTextValue1("");
     setAnswer(null);
     const { value } = e.target;
-    const reg = new RegExp("^[0-9]+$");
-    if (!reg.test(value)) {
-      if (!value) {
-        setvalueOne("");
+    const l = value.length;
+    const lc = parseInt(value[l - 1]);
+    if (!value) {
+      setvalueOne("");
+      valueFirst.changeAmount("");
+      return;
+    }
+    if (value[l - 1] === ".") {
+      if (!value.slice(0, l - 1).includes(".")) {
+        setvalueOne(value);
+        valueFirst.changeAmount(value);
+        return;
+      } else {
+        setvalueOne(valueOne);
+        valueFirst.changeAmount(valueOne);
+        setTextFeildError1(true);
+        setHelperTextValue1("Enter Valid Characters");
         return;
       }
+    }
+    if (!Number.isInteger(lc)) {
+      setvalueOne(valueOne);
+      valueFirst.changeAmount(valueOne);
       setTextFeildError1(true);
       setHelperTextValue1("Enter Valid Characters");
       return;
     }
-    setvalueOne(value.replace(/[^0-9]/g, ""));
+    setvalueOne(value);
+    valueFirst.changeAmount(valueOne);
   };
+
+  // below function handles the value two textfeild
   const handleConvertValueTwoChange = (e) => {
     setTextFeildError2(false);
-    setvalueTwo(null);
+    // setvalueTwo(null);
     setHelperTextValue2("");
     setAnswer(null);
     const { value } = e.target;
-    const reg = new RegExp("^[0-9]+$");
-    if (!reg.test(value)) {
-      if (!value) {
-        setvalueTwo("");
+
+    const l = value.length;
+    const lc = parseInt(value[l - 1]);
+    if (!value) {
+      setvalueTwo("");
+      valueSecond.changeAmount("");
+      return;
+    }
+    if (value[l - 1] === ".") {
+      if (!value.slice(0, l - 1).includes(".")) {
+        setvalueTwo(value);
+        valueSecond.changeAmount(value);
+        return;
+      } else {
+        setvalueOne(valueTwo);
+        valueSecond.changeAmount(valueTwo);
+        setTextFeildError2(true);
+        setHelperTextValue2("Enter Valid Characters");
         return;
       }
+    }
+    if (!Number.isInteger(lc)) {
+      setvalueOne(valueTwo);
+      valueSecond.changeAmount(valueTwo);
       setTextFeildError2(true);
       setHelperTextValue2("Enter Valid Characters");
       return;
     }
-    setvalueTwo(value.replace(/[^0-9]/g, ""));
+    setvalueTwo(value);
+    valueSecond.changeAmount(value);
   };
+
+  // below function handles the changes for dropdown near textfeild one
   const handleUnitOneChange = (value) => {
     setAnswer(null);
     setUnit1(value);
+    valueFirst.changeCurrency(value);
   };
+
+  // below function handles the changes for dropdown near textfeild two
   const handleUnitTwoChange = (value) => {
     setAnswer(null);
     setUnit2(value);
+    valueSecond.changeCurrency(value);
   };
+
+  // below function performs arithemetics on calculate button press
   const handleArithemetics = () => {
-    if (!valueOne) {
+    if (!valueOne || textFeildError1) {
       setTextFeildError1(true);
       setHelperTextValue1("Enter Value");
+      setAnswer("wrong values are used");
       return;
     }
-    if (!valueTwo) {
+    if (!valueTwo || textFeildError2) {
       setTextFeildError2(true);
       setHelperTextValue2("Enter Value");
+      setAnswer("wrong values are used");
       return;
     }
+    // console.log(valueFirst.getCurrency());
     const unitOne = unit1.toLowerCase();
+    // console.log(valueSecond.getCurrency());
     const unitTwo = unit2.toLowerCase();
     const bUnit = baseUnit.toLowerCase();
     const value1 = parseFloat(valueOne);
+    // console.log(valueFirst.getAmount());
     const value2 = parseFloat(valueTwo);
+    // console.log(valueSecond.getAmount());
     if (selectedOperation === "Add") {
       const valueOneinBaseUnit = value1 * conversationData[unitOne][bUnit];
       const valueTwoinBaseUnit = value2 * conversationData[unitTwo][bUnit];
@@ -148,17 +209,11 @@ export default function Arithemetic() {
       container
       justify="center"
       xs={12}
-      style={{ marginTop: 50, flexBasis: 0 }}
+      className={classes.mainContainer}
       direction="column"
     >
       <BaseUnitComponent
-        titleStyle={{
-          fontSize: 20,
-          fontWeight: 300,
-          letterSpacing: 2,
-          lineHeight: 2,
-          color: "#000000"
-        }}
+        titleStyle={usedStyles.dropDownTitleStyle}
         titleText="Select Base Unit"
         selectorLabel="Base Unit"
         selectorValue={baseUnit}
@@ -168,13 +223,7 @@ export default function Arithemetic() {
         handleChange={handleBaseUnitChange}
       />
       <BaseUnitComponent
-        titleStyle={{
-          fontSize: 20,
-          fontWeight: 300,
-          letterSpacing: 2,
-          lineHeight: 2,
-          color: "#000000"
-        }}
+        titleStyle={usedStyles.dropDownTitleStyle}
         titleText="Select Operation"
         selectorLabel="Op. Type"
         selectorValue={selectedOperation}
@@ -187,9 +236,9 @@ export default function Arithemetic() {
         container
         xs={12}
         justify="center"
-        style={{ marginTop: 50, flexBasis: 0 }}
+        className={classes.mainContainer}
       >
-        <Grid style={{ marginLeft: 50, marginRight: 100 }}>
+        <Grid className={classes.valueContainer}>
           <ConversionComponent
             error={textFeildError1}
             textFeildLabel="Enter Value One"
@@ -205,7 +254,7 @@ export default function Arithemetic() {
             selectorChangeFunc={handleUnitOneChange}
           />
         </Grid>
-        <Grid style={{ marginLeft: 50, marginRight: 100 }}>
+        <Grid className={classes.valueContainer}>
           <ConversionComponent
             error={textFeildError2}
             textFeildLabel="Enter Value Two"
@@ -228,32 +277,18 @@ export default function Arithemetic() {
           container
           justify="center"
           xs={12}
-          style={{ marginTop: 30, flexBasis: 0 }}
+          className={classes.mainContainer}
         >
           <ButtonComponent
             onPress={handleArithemetics}
-            buttonStyle={{
-              color: "white",
-              backgroundColor: "blue",
-              fontSize: 20,
-              fontWeight: 600
-            }}
+            buttonStyle={usedStyles.calcButtonStyle}
             label="Calculate"
           />
         </Grid>
       </Grid>
       {answer ? (
         <DisplayComponent
-          textStyle={{
-            fontSize: 30,
-            fontWeight: 600,
-            letterSpacing: 2,
-            lineHeight: 2,
-            color: "red",
-            backgroundImage:
-              "radial-gradient( circle 780.6px at 10% 20%,  rgba(133,255,189,1) 0%, rgba(255,251,125,1) 90.7% )",
-            width: "50%"
-          }}
+          textStyle={usedStyles.ansDispStyle}
           text={`Result :  ${answer}`}
         />
       ) : (
@@ -261,7 +296,7 @@ export default function Arithemetic() {
           container
           justify="center"
           xs={12}
-          style={{ marginTop: 50, flexBasis: 0 }}
+          className={classes.mainContainer}
         />
       )}
     </Grid>

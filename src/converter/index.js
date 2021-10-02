@@ -3,7 +3,7 @@ import React from "react";
 import ButtonComponent from "../buttonComponent";
 import ConversionComponent from "../conversionComponent";
 import DisplayComponent from "../displayComponent";
-import { useStyles } from "./style";
+import { useStyles, usedStyles } from "./style";
 
 import {
   conversationData,
@@ -21,16 +21,21 @@ export default function Converter() {
   const [textFeildError, setTextFeildError] = React.useState(false);
   const [convertedValue, setConvertedValue] = React.useState(null);
 
+  // below function handles base unit changes
   const handleBaseUnitChange = (value) => {
     setConvertedValue(null);
     setBaseUnit(value);
   };
+
+  // below function handles the unit changes to which textfeild is
   const handleConvertUnitChange = (value) => {
     setConvertedValue(null);
     setConvertUnit(value);
   };
+
+  //below function do the conversion logic on button press
   const handleConversion = () => {
-    if (!convertValue) {
+    if (!convertValue || textFeildError) {
       setTextFeildError(true);
       setHelperTextValue("Enter Value");
       return;
@@ -41,6 +46,8 @@ export default function Converter() {
     const cFactor = conversationData[cUnit][bUnit];
     setConvertedValue((cValue * cFactor).toFixed(2));
   };
+
+  // below function performs the changes in the textfeild box
   const handleConvertValueChange = (e) => {
     setTextFeildError(false);
     setConvertedValue(null);
@@ -57,13 +64,14 @@ export default function Converter() {
         setConvertValue(value);
         return;
       } else {
+        setConvertValue(convertValue);
         setTextFeildError(true);
         setHelperTextValue("Enter Valid Characters");
         return;
       }
     }
-    console.log(Number.isInteger(lc));
     if (!Number.isInteger(lc)) {
+      setConvertValue(convertValue);
       setTextFeildError(true);
       setHelperTextValue("Enter Valid Characters");
       return;
@@ -77,17 +85,11 @@ export default function Converter() {
         container
         justify="center"
         xs={12}
-        style={{ marginTop: 50, flexBasis: 0 }}
+        className={classes.mainContainer}
         direction="column"
       >
         <BaseUnitComponent
-          titleStyle={{
-            fontSize: 20,
-            fontWeight: 300,
-            letterSpacing: 2,
-            lineHeight: 2,
-            color: "#000000"
-          }}
+          titleStyle={usedStyles.dropDownTitleStyle}
           titleText="Select Base Unit"
           selectorLabel="Base Unit"
           selectorValue={baseUnit}
@@ -101,7 +103,7 @@ export default function Converter() {
         container
         xs={12}
         justify="center"
-        style={{ marginTop: 50, flexBasis: 0 }}
+        className={classes.mainContainer}
       >
         <ConversionComponent
           error={textFeildError}
@@ -122,31 +124,17 @@ export default function Converter() {
         container
         justify="center"
         xs={12}
-        style={{ marginTop: 30, flexBasis: 0 }}
+        className={classes.mainContainer}
       >
         <ButtonComponent
           onPress={handleConversion}
-          buttonStyle={{
-            color: "white",
-            backgroundColor: "blue",
-            fontSize: 20,
-            fontWeight: 600
-          }}
+          buttonStyle={usedStyles.convButtonStyle}
           label="Convert"
         />
       </Grid>
       {convertedValue ? (
         <DisplayComponent
-          textStyle={{
-            fontSize: 30,
-            fontWeight: 600,
-            letterSpacing: 2,
-            lineHeight: 2,
-            color: "red",
-            backgroundImage:
-              "radial-gradient( circle 780.6px at 10% 20%,  rgba(133,255,189,1) 0%, rgba(255,251,125,1) 90.7% )",
-            width: "50%"
-          }}
+          textStyle={usedStyles.ansDispStyle}
           text={`The conversion value of ${convertValue} ${convertUnit} is ${convertedValue} ${baseUnit}`}
         />
       ) : (
@@ -154,7 +142,7 @@ export default function Converter() {
           container
           justify="center"
           xs={12}
-          style={{ marginTop: 50, flexBasis: 0 }}
+          className={classes.mainContainer}
         />
       )}
     </>

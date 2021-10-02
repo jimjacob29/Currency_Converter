@@ -13,6 +13,7 @@ export default function Home() {
   const classes = useStyles();
   const [value, setValue] = React.useState(0);
 
+  //Below function controls tab changes
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
